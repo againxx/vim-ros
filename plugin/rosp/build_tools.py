@@ -5,6 +5,7 @@ import os.path
 class BuildTool(object):
     def __init__(self, package_path, ws_path):
         self._package_path = package_path
+        self._package_name = os.path.split(package_path)[1]
         self._ws_path = ws_path
 
     @property
@@ -19,7 +20,10 @@ class CatkinBuild(BuildTool):
     def get_make_command(self, catkin_make_options="", targets="workspace"):
         make_cmd = "catkin build --workspace {0}".format(self._ws_path)
         if targets == "this":
-            make_cmd += " --this"
+            targets = [self._package_name]
+        elif targets == "workspace":
+            targets = []
+        make_cmd += " " + " ".join(targets)
         return make_cmd
 
     @classmethod
@@ -41,8 +45,7 @@ class CatkinMake(BuildTool):
     def get_make_command(self, catkin_make_options="", targets="workspace"):
         make_cmd = "catkin_make -C {0} {1}".format(self._ws_path, catkin_make_options)
         if targets == "this":
-            name = os.path.split(self._package_path)[1]
-            make_cmd += " --pkg " + name
+            make_cmd += " --pkg " + self._package_name
         elif targets != "workspace":
             make_cmd += " --pkg " + " ".join(targets)
         return make_cmd
